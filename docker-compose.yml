@@ -1,0 +1,46 @@
+services:
+  hadoop:
+    build:
+      context: ./hadoop
+    container_name: hadoop
+    volumes:
+      - ./ventas_125052726.csv:/data/input/ventas_125052726.csv:ro
+      - ./:/app
+    networks:
+      - datamart-net
+
+  db:
+    image: postgres:15-alpine
+    container_name: db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - datamart-net
+
+  api:
+    build:
+      context: ./api
+    container_name: api
+    ports:
+      - "8000:8000"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_HOST: db
+    depends_on:
+      - db
+    volumes:
+      - ./:/app
+    networks:
+      - datamart-net
+
+volumes:
+  pgdata:
+
+networks:
+  datamart-net:
